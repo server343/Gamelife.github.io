@@ -61,6 +61,33 @@ function initCanvas() {
     // Set canvas style for crisp rendering
     canvas.style.width = canvas.width + 'px';
     canvas.style.height = canvas.height + 'px';
+
+    // Update colors based on theme
+    updateCanvasColors();
+}
+
+// Theme Detection and Color Updates
+function updateCanvasColors() {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (isDarkMode) {
+        CONFIG.cellDeadColor = '#1e223a';
+        CONFIG.cellAliveColorStart = '#667eea';
+        CONFIG.cellAliveColorEnd = '#764ba2';
+    } else {
+        CONFIG.cellDeadColor = '#f0f2f5';
+        CONFIG.cellAliveColorStart = '#667eea';
+        CONFIG.cellAliveColorEnd = '#764ba2';
+    }
+}
+
+// Listen for theme changes
+if (window.matchMedia) {
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    darkModeQuery.addEventListener('change', () => {
+        updateCanvasColors();
+        renderGrid();
+    });
 }
 
 // Create Empty Grid
@@ -126,8 +153,13 @@ function nextGeneration() {
 
 // Render Grid
 function renderGrid() {
+    // Update colors in case theme changed
+    const cellDeadColor = CONFIG.cellDeadColor || '#1e223a';
+    const cellAliveColorStart = CONFIG.cellAliveColorStart || '#667eea';
+    const cellAliveColorEnd = CONFIG.cellAliveColorEnd || '#764ba2';
+
     // Clear canvas
-    ctx.fillStyle = '#1e223a';
+    ctx.fillStyle = cellDeadColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw cells
@@ -141,8 +173,8 @@ function renderGrid() {
                     (x + 1) * CONFIG.cellSize,
                     (y + 1) * CONFIG.cellSize
                 );
-                gradient.addColorStop(0, '#667eea');
-                gradient.addColorStop(1, '#764ba2');
+                gradient.addColorStop(0, cellAliveColorStart);
+                gradient.addColorStop(1, cellAliveColorEnd);
 
                 ctx.fillStyle = gradient;
                 ctx.fillRect(
