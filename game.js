@@ -9,7 +9,8 @@ const CONFIG = {
     defaultSpeed: 5,
     minSpeed: 1,
     maxSpeed: 10,
-    initialDensity: 0.3, // 30% cells alive on random generation
+    initialDensity: 0.45, // 45% cells alive on random generation (increased from 0.3)
+    mutationRate: 0.001, // Probability of random cell mutation per generation (0 = no mutations)
 };
 
 // Game State
@@ -163,17 +164,20 @@ function createRandomGrid() {
     );
 }
 
-// Count Living Neighbors
+// Count Living Neighbors (Non-toroidal - edges don't wrap)
 function countNeighbors(grid, x, y) {
     let count = 0;
     for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
             if (i === 0 && j === 0) continue;
 
-            const newY = (y + i + CONFIG.gridHeight) % CONFIG.gridHeight;
-            const newX = (x + j + CONFIG.gridWidth) % CONFIG.gridWidth;
+            const newY = y + i;
+            const newX = x + j;
 
-            count += grid[newY][newX];
+            // Check bounds - cells outside the grid are considered dead
+            if (newY >= 0 && newY < CONFIG.gridHeight && newX >= 0 && newX < CONFIG.gridWidth) {
+                count += grid[newY][newX];
+            }
         }
     }
     return count;
@@ -199,6 +203,12 @@ function nextGeneration() {
                 newGrid[y][x] = 1;
             } else {
                 newGrid[y][x] = 0;
+            }
+
+            // Apply mutation if mutationRate > 0
+            // This helps prevent early stabilization
+            if (CONFIG.mutationRate > 0 && Math.random() < CONFIG.mutationRate) {
+                newGrid[y][x] = newGrid[y][x] === 1 ? 0 : 1;
             }
         }
     }
