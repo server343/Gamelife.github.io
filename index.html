@@ -6,7 +6,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="Juego de la Vida de Conway - Simulación interactiva con controles avanzados">
-    <title>Juego de la Vida de Conway</title>
+    <title>Juego de la Vida de Conway v1.0</title>
 
     <!-- Theme Color - Changes based on system preference -->
     <meta name="theme-color" content="#0a0e27" media="(prefers-color-scheme: dark)">
@@ -34,10 +34,16 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <h1 class="title">
-                <span class="gradient-text">Juego de la Vida</span>
-                <span class="subtitle">de Conway</span>
-            </h1>
+            <div class="title-container">
+                <h1 class="title">
+                    <span class="gradient-text">Juego de la Vida</span>
+                    <span class="subtitle">de Conway</span>
+                    <span class="version">v1.0</span>
+                </h1>
+                <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema">
+                    <span id="themeIcon">🌙</span>
+                </button>
+            </div>
             <p class="description"></p>
         </header>
 
@@ -50,8 +56,8 @@
                     <h3 class="section-title">Control</h3>
                     <div class="button-group">
                         <button id="playPauseBtn" class="btn btn-primary" aria-label="Iniciar o pausar">
-                            <span id="playPauseIcon">⏸️</span>
-                            <span id="playPauseText">Pausar</span>
+                            <span id="playPauseIcon">▶️</span>
+                            <span id="playPauseText">Iniciar</span>
                         </button>
                         <button id="stepBtn" class="btn btn-secondary" aria-label="Avanzar un paso">
                             ⏭️ Paso
