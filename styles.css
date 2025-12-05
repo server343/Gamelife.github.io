@@ -55,7 +55,7 @@
    LIGHT THEME
    ================================================ */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     /* Light Mode Colors */
     --bg-dark: #f5f7fa;
     --bg-medium: #ffffff;
@@ -82,6 +82,35 @@
     /* Body background gradient - light */
     --body-bg: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #ffffff 100%);
   }
+}
+
+/* Manual Light Theme Override */
+:root[data-theme="light"] {
+  /* Light Mode Colors */
+  --bg-dark: #f5f7fa;
+  --bg-medium: #ffffff;
+  --bg-light: #e8ecf1;
+  --bg-overlay: rgba(255, 255, 255, 0.95);
+
+  --cell-alive: #667eea;
+  --cell-dead: #f0f2f5;
+  --cell-hover: #e0e4ea;
+
+  --text-primary: #1a1f3a;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
+
+  /* Shadows for light mode */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+  --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.2);
+
+  /* Body background gradient - light */
+  --body-bg: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #ffffff 100%);
 }
 
 /* Reset & Base Styles */
@@ -123,6 +152,15 @@ body {
   animation: fadeInDown 0.6s ease-out;
 }
 
+.title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
 .title {
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700;
@@ -144,6 +182,48 @@ body {
   font-weight: 300;
   color: var(--text-secondary);
   margin-top: 0.25rem;
+}
+
+.version {
+  display: inline-block;
+  font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.75rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.theme-toggle {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.5rem;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+.theme-toggle:hover {
+  transform: rotate(180deg) scale(1.1);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.theme-toggle:active {
+  transform: rotate(180deg) scale(0.95);
 }
 
 .description {
