@@ -41,6 +41,8 @@ const closeModalBtn = document.getElementById('closeModal');
 const savedGamesList = document.getElementById('savedGamesList');
 const noGamesMessage = document.getElementById('noGamesMessage');
 const toast = document.getElementById('toast');
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
 
 // Initialize Canvas
 function initCanvas() {
@@ -81,12 +83,67 @@ function updateCanvasColors() {
     }
 }
 
+// Theme Management
+let currentTheme = 'auto'; // 'auto', 'light', or 'dark'
+
+// Initialize theme from localStorage or default to auto
+function initTheme() {
+    const savedTheme = localStorage.getItem('conwayTheme') || 'auto';
+    currentTheme = savedTheme;
+    applyTheme(currentTheme);
+}
+
+// Apply theme to document
+function applyTheme(theme) {
+    const root = document.documentElement;
+
+    if (theme === 'light') {
+        root.setAttribute('data-theme', 'light');
+        themeIcon.textContent = '☀️';
+    } else if (theme === 'dark') {
+        root.setAttribute('data-theme', 'dark');
+        themeIcon.textContent = '🌙';
+    } else {
+        // Auto mode - remove attribute to use system preference
+        root.removeAttribute('data-theme');
+        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        themeIcon.textContent = isDarkMode ? '🌙' : '☀️';
+    }
+
+    // Update canvas colors when theme changes
+    updateCanvasColors();
+    renderGrid();
+}
+
+// Toggle theme between auto -> light -> dark -> auto
+function toggleTheme() {
+    if (currentTheme === 'auto') {
+        currentTheme = 'light';
+    } else if (currentTheme === 'light') {
+        currentTheme = 'dark';
+    } else {
+        currentTheme = 'auto';
+    }
+
+    localStorage.setItem('conwayTheme', currentTheme);
+    applyTheme(currentTheme);
+
+    const themeNames = {
+        'auto': 'Automático (sistema)',
+        'light': 'Claro',
+        'dark': 'Oscuro'
+    };
+    showToast(`Tema cambiado a: ${themeNames[currentTheme]}`, 'success');
+}
+
 // Listen for theme changes
 if (window.matchMedia) {
     const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
     darkModeQuery.addEventListener('change', () => {
-        updateCanvasColors();
-        renderGrid();
+        // Only update if in auto mode
+        if (currentTheme === 'auto') {
+            applyTheme('auto');
+        }
     });
 }
 
@@ -469,6 +526,7 @@ speedSlider.addEventListener('input', updateSpeed);
 saveBtn.addEventListener('click', saveGame);
 loadMenuBtn.addEventListener('click', showLoadModal);
 closeModalBtn.addEventListener('click', closeModal);
+themeToggle.addEventListener('click', toggleTheme);
 
 // Canvas interaction
 canvas.addEventListener('click', handleCanvasClick);
@@ -507,18 +565,19 @@ window.addEventListener('resize', () => {
     }, 250);
 });
 
-// Initialize and Auto-start
+// Initialize and Start
 function init() {
+    // Initialize theme first
+    initTheme();
+
     initCanvas();
     grid = createRandomGrid();
     renderGrid();
     updateStats();
 
-    // Auto-start the game
-    setTimeout(() => {
-        start();
-        showToast('¡Juego iniciado! Presiona Espacio para pausar', 'success');
-    }, 500);
+    // Don't auto-start - wait for user interaction
+    // This fixes iOS issues where requestAnimationFrame needs user gesture
+    showToast('¡Bienvenido! Presiona Iniciar o Espacio para comenzar', 'success');
 }
 
 // Start the game when page loads
