@@ -3,9 +3,9 @@
 
 // Configuration
 const CONFIG = {
-    cellSize: 8,
-    gridWidth: 80,
-    gridHeight: 50,
+    cellSize: 10,     // Increased from 8 for larger cells
+    gridWidth: 140,   // Increased from 80 for much larger canvas
+    gridHeight: 85,   // Increased from 50 for much larger canvas
     defaultSpeed: 5,
     minSpeed: 1,
     maxSpeed: 10,
@@ -47,16 +47,17 @@ const themeIcon = document.getElementById('themeIcon');
 
 // Initialize Canvas
 function initCanvas() {
-    // Adjust grid size for mobile devices
+    // Adjust grid size for mobile devices - but keep it larger than before
     if (window.innerWidth < 768) {
-        CONFIG.cellSize = 6;
-        CONFIG.gridWidth = Math.floor((window.innerWidth - 64) / CONFIG.cellSize);
-        CONFIG.gridHeight = Math.floor((window.innerHeight * 0.5) / CONFIG.cellSize);
+        CONFIG.cellSize = 8;  // Increased from 6 for better visibility
+        CONFIG.gridWidth = Math.floor((window.innerWidth - 40) / CONFIG.cellSize);
+        CONFIG.gridHeight = Math.floor((window.innerHeight * 0.65) / CONFIG.cellSize);  // Increased from 0.5
     } else if (window.innerWidth < 1024) {
-        CONFIG.cellSize = 7;
-        CONFIG.gridWidth = Math.floor((window.innerWidth * 0.6) / CONFIG.cellSize);
-        CONFIG.gridHeight = Math.floor((window.innerHeight * 0.6) / CONFIG.cellSize);
+        CONFIG.cellSize = 9;  // Increased from 7
+        CONFIG.gridWidth = Math.floor((window.innerWidth * 0.75) / CONFIG.cellSize);  // Increased from 0.6
+        CONFIG.gridHeight = Math.floor((window.innerHeight * 0.7) / CONFIG.cellSize);  // Increased from 0.6
     }
+    // For larger screens, use the default CONFIG values (140x85 with cellSize 10)
 
     canvas.width = CONFIG.gridWidth * CONFIG.cellSize;
     canvas.height = CONFIG.gridHeight * CONFIG.cellSize;
