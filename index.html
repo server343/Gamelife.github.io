@@ -1,152 +1,333 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="description" content="Juego de la Vida de Conway - Simulación interactiva con controles avanzados">
-    <title>Juego de la Vida de Conway v1.0</title>
-
-    <!-- Theme Color - Changes based on system preference -->
-    <meta name="theme-color" content="#0a0e27" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
-
-    <!-- iOS Specific Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Conway's Life">
-
-    <!-- Android Specific Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Conway's Life">
-
-    <!-- Prevent iOS from auto-detecting phone numbers -->
-    <meta name="format-detection" content="telephone=no">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game of Life - Infinity</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --panel-bg: #1a1a1a;
+            --cell-color: #0aff99;
+            --btn-bg: #333;
+            --text-color: #fff;
+        }
+        * { box-sizing: border-box; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        header {
+            padding: 15px;
+            background: var(--panel-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            z-index: 2;
+        }
+        .hud-item span { display: block; font-size: 10px; color: #888; letter-spacing: 1px; }
+        .hud-item strong { font-size: 18px; font-weight: 700; color: var(--cell-color); }
+        #canvas-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            image-rendering: pixelated;
+            box-shadow: 0 0 30px rgba(10, 255, 153, 0.1);
+        }
+        #toast {
+            position: absolute;
+            top: 20px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 255, 153, 0.9);
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 5;
+        }
+        footer {
+            background: var(--panel-bg);
+            padding: 15px;
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            border-top: 1px solid #333;
+        }
+        button {
+            background: var(--btn-bg);
+            border: none;
+            color: white;
+            height: 50px;
+            border-radius: 12px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+        }
+        button:active { transform: scale(0.92); }
+        button.active-btn { background: var(--cell-color); color: #000; box-shadow: 0 0 15px var(--cell-color); }
+    </style>
 </head>
-
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="title-container">
-                <h1 class="title">
-                    <span class="gradient-text">Juego de la Vida</span>
-                    <span class="subtitle">de Conway</span>
-                    <span class="version">v1.0</span>
-                </h1>
-                <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema">
-                    <span id="themeIcon">🌙</span>
-                </button>
-            </div>
-            <p class="description"></p>
-        </header>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Controls Panel -->
-            <div class="controls-panel glass-panel">
-                <!-- Playback Controls -->
-                <div class="control-section">
-                    <h3 class="section-title">Control</h3>
-                    <div class="button-group">
-                        <button id="playPauseBtn" class="btn btn-primary" aria-label="Iniciar o pausar">
-                            <span id="playPauseIcon">▶️</span>
-                            <span id="playPauseText">Iniciar</span>
-                        </button>
-                        <button id="stepBtn" class="btn btn-secondary" aria-label="Avanzar un paso">
-                            ⏭️ Paso
-                        </button>
-                        <button id="clearBtn" class="btn btn-danger" aria-label="Limpiar tablero">
-                            🗑️ Limpiar
-                        </button>
-                        <button id="randomBtn" class="btn btn-accent" aria-label="Generar tablero aleatorio">
-                            🎲 Aleatorio
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Speed Control -->
-                <div class="control-section">
-                    <h3 class="section-title">Velocidad</h3>
-                    <div class="slider-container">
-                        <label for="speedSlider" class="slider-label">
-                            <span>🐢 Lento</span>
-                            <span id="speedValue" class="speed-value">5x</span>
-                            <span>🚀 Rápido</span>
-                        </label>
-                        <input type="range" id="speedSlider" min="1" max="10" value="5" class="speed-slider">
-                    </div>
-                </div>
-
-                <!-- Statistics -->
-                <div class="control-section">
-                    <h3 class="section-title">Estadísticas</h3>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <span class="stat-label">Generación</span>
-                            <span id="generation" class="stat-value">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Células Vivas</span>
-                            <span id="population" class="stat-value">0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Save/Load Controls -->
-                <div class="control-section">
-                    <h3 class="section-title">Guardar / Cargar</h3>
-                    <div class="save-controls">
-                        <div class="input-group">
-                            <input type="text" id="saveName" placeholder="Nombre de la partida..." class="save-input">
-                            <button id="saveBtn" class="btn btn-success" aria-label="Guardar partida">
-                                💾 Guardar
-                            </button>
-                        </div>
-                        <button id="loadMenuBtn" class="btn btn-info" aria-label="Abrir menú de carga">
-                            📂 Ver Partidas Guardadas
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Game Canvas -->
-            <div class="game-container glass-panel">
-                <canvas id="gameCanvas" class="game-canvas"></canvas>
-                <div class="canvas-overlay">
-                    <p class="overlay-hint">Haz clic en las células para activarlas/desactivarlas</p>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Load Modal -->
-    <div id="loadModal" class="modal">
-        <div class="modal-content glass-panel">
-            <div class="modal-header">
-                <h2 class="modal-title">Partidas Guardadas</h2>
-                <button id="closeModal" class="close-btn" aria-label="Cerrar">✕</button>
-            </div>
-            <div class="modal-body">
-                <div id="savedGamesList" class="saved-games-list">
-                    <!-- Saved games will be dynamically inserted here -->
-                </div>
-                <p id="noGamesMessage" class="no-games-message">No hay partidas guardadas</p>
-            </div>
+    <header>
+        <div class="hud-item">
+            <span>GEN</span>
+            <strong id="gen-c">0</strong>
         </div>
+        <div class="hud-item" style="text-align: right;">
+            <span>VIVAS</span>
+            <strong id="live-c">0</strong>
+        </div>
+    </header>
+
+    <div id="canvas-wrapper">
+        <canvas id="game"></canvas>
+        <div id="toast"></div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast"></div>
+    <footer>
+        <button onclick="clearGrid()">🗑️</button>
+        <button onclick="addChaos()">⚡</button>
+        <button id="playBtn" class="active-btn" onclick="togglePlay()">▶️</button>
+        <button onclick="saveState()">💾</button>
+        <button onclick="loadState()">📂</button>
+    </footer>
 
-    <script src="game.js"></script>
+    <script>
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        const genEl = document.getElementById('gen-c');
+        const liveEl = document.getElementById('live-c');
+        const playBtn = document.getElementById('playBtn');
+        const toastEl = document.getElementById('toast');
+
+        let grid = [];
+        let cols, rows;
+        const scale = 16;
+        let isPlaying = false;
+        let animationId;
+        let generation = 0;
+        let stabilityCounter = 0;
+        let lastPopulation = 0;
+
+        function init() {
+            resize();
+            randomize();
+            loop();
+        }
+
+        function resize() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            cols = Math.floor(wrapper.clientWidth / scale);
+            rows = Math.floor(wrapper.clientHeight / scale);
+            canvas.width = cols * scale;
+            canvas.height = rows * scale;
+            
+            const newGrid = new Array(cols).fill(null).map(() => new Array(rows).fill(0));
+            if (grid.length) {
+                for(let i=0; i<Math.min(cols, grid.length); i++) {
+                    for(let j=0; j<Math.min(rows, grid[0].length); j++) {
+                        newGrid[i][j] = grid[i][j];
+                    }
+                }
+            }
+            grid = newGrid;
+            draw();
+        }
+
+        function randomize() {
+            grid = grid.map(col => col.map(() => Math.random() > 0.85 ? 1 : 0));
+            generation = 0;
+            draw();
+        }
+
+        function addChaos() {
+            const centerX = Math.floor(Math.random() * cols);
+            const centerY = Math.floor(Math.random() * rows);
+            for(let i = -5; i < 5; i++) {
+                for(let j = -5; j < 5; j++) {
+                    const col = (centerX + i + cols) % cols;
+                    const row = (centerY + j + rows) % rows;
+                    if(Math.random() > 0.5) grid[col][row] = 1;
+                }
+            }
+            draw();
+            showMsg("CAOS INYECTADO");
+        }
+
+        function clearGrid() {
+            grid = grid.map(col => col.map(() => 0));
+            generation = 0;
+            pause();
+            draw();
+        }
+
+        function compute() {
+            let next = new Array(cols).fill(null).map(() => new Array(rows).fill(0));
+            let changed = false;
+            let currentPop = 0;
+
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    let state = grid[i][j];
+                    let neighbors = count(i, j);
+
+                    if (state === 0 && neighbors === 3) {
+                        next[i][j] = 1;
+                        changed = true;
+                    } else if (state === 1 && (neighbors < 2 || neighbors > 3)) {
+                        next[i][j] = 0;
+                        changed = true;
+                    } else {
+                        next[i][j] = state;
+                    }
+                    if(next[i][j] === 1) currentPop++;
+                }
+            }
+
+            grid = next;
+            generation++;
+            
+            if (!changed || currentPop === lastPopulation) {
+                stabilityCounter++;
+            } else {
+                stabilityCounter = 0;
+            }
+
+            if (stabilityCounter > 25) {
+                addChaos();
+                stabilityCounter = 0;
+            }
+
+            lastPopulation = currentPop;
+            updateUI(currentPop);
+            draw();
+        }
+
+        function count(x, y) {
+            let sum = 0;
+            for (let i = -1; i < 2; i++) {
+                for (let j = -1; j < 2; j++) {
+                    let col = (x + i + cols) % cols;
+                    let row = (y + j + rows) % rows;
+                    sum += grid[col][row];
+                }
+            }
+            sum -= grid[x][y];
+            return sum;
+        }
+
+        function draw() {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0aff99';
+            
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    if (grid[i][j] === 1) {
+                        ctx.fillRect(i * scale, j * scale, scale - 1, scale - 1);
+                    }
+                }
+            }
+        }
+
+        function updateUI(pop) {
+            genEl.innerText = generation;
+            liveEl.innerText = pop;
+        }
+
+        function loop() {
+            if (isPlaying) {
+                compute();
+                setTimeout(() => {
+                    animationId = requestAnimationFrame(loop);
+                }, 80); 
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pause(); else play();
+        }
+
+        function play() {
+            isPlaying = true;
+            playBtn.innerText = '⏸️';
+            playBtn.classList.add('active-btn');
+            loop();
+        }
+
+        function pause() {
+            isPlaying = false;
+            playBtn.innerText = '▶️';
+            playBtn.classList.remove('active-btn');
+            cancelAnimationFrame(animationId);
+        }
+
+        function handleInput(e) {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.changedTouches ? e.changedTouches[0] : e;
+            const x = Math.floor((touch.clientX - rect.left) / scale);
+            const y = Math.floor((touch.clientY - rect.top) / scale);
+
+            for(let i = -1; i <= 1; i++){
+                for(let j = -1; j <= 1; j++){
+                    let cx = x + i;
+                    let cy = y + j;
+                    if (cx >= 0 && cx < cols && cy >= 0 && cy < rows) {
+                        grid[cx][cy] = 1; 
+                    }
+                }
+            }
+            draw();
+        }
+
+        canvas.addEventListener('mousedown', handleInput);
+        canvas.addEventListener('touchstart', handleInput, {passive: false});
+        canvas.addEventListener('touchmove', handleInput, {passive: false});
+        window.addEventListener('resize', () => setTimeout(resize, 200));
+
+        function showMsg(text) {
+            toastEl.innerText = text;
+            toastEl.style.opacity = 1;
+            setTimeout(() => toastEl.style.opacity = 0, 1500);
+        }
+
+        function saveState() {
+            localStorage.setItem('gol_save', JSON.stringify({ grid, generation }));
+            showMsg("PARTIDA GUARDADA");
+        }
+
+        function loadState() {
+            const data = JSON.parse(localStorage.getItem('gol_save'));
+            if (data) {
+                pause();
+                grid = data.grid;
+                generation = data.generation;
+                resize(); 
+                draw();
+                showMsg("PARTIDA CARGADA");
+            }
+        }
+
+        init();
+    </script>
 </body>
-
 </html>
-
